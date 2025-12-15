@@ -17,24 +17,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      setUser(currentUser);
-    }
-    setLoading(false);
+    const initAuth = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+        }
+      } catch (error) {
+        console.error("Error loading user", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initAuth();
   }, []);
 
   const login = async (email: string, password: string) => {
-    const user = authService.login(email, password);
-    if (user) {
-      setUser(user);
-      return true;
+    try {
+      const user = await authService.login(email, password);
+      if (user) {
+        setUser(user);
+        return true;
+      }
+    } catch (error) {
+      console.error("Login error", error);
+      throw error; // Rethrow to let component handle it
     }
     return false;
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    await authService.logout();
     setUser(null);
   };
 

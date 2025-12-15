@@ -20,27 +20,28 @@ const UserManagement: React.FC = () => {
     loadUsers();
   }, []);
 
-  const loadUsers = () => {
-    setUsers(authService.getUsers());
+  const loadUsers = async () => {
+    const users = await authService.getUsers();
+    setUsers(users);
   };
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      authService.registerUser({ name, email, password, role });
+      await authService.registerUser({ name, email, password, role });
       closeModal();
-      loadUsers();
+      await loadUsers();
       alert("Usuário criado com sucesso!");
     } catch (error: any) {
       alert(error.message);
     }
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
     try {
-      authService.updatePassword(selectedUser.id, password);
+      await authService.updatePassword(selectedUser.id, password);
       closeModal();
       alert("Senha atualizada com sucesso!");
     } catch (error: any) {
@@ -48,10 +49,14 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  const handleDeleteUser = (id: string) => {
+  const handleDeleteUser = async (id: string) => {
     if (window.confirm("Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.")) {
-      authService.deleteUser(id);
-      loadUsers();
+      try {
+        await authService.deleteUser(id);
+        await loadUsers();
+      } catch (error: any) {
+        alert("Erro ao excluir: " + error.message);
+      }
     }
   };
 
@@ -133,14 +138,14 @@ const UserManagement: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end space-x-2">
-                      <button 
+                      <button
                         onClick={() => openPasswordModal(user)}
                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                         title="Alterar Senha"
                       >
                         <Key size={18} />
                       </button>
-                      <button 
+                      <button
                         onClick={() => handleDeleteUser(user.id)}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Excluir Usuário"
@@ -168,7 +173,7 @@ const UserManagement: React.FC = () => {
                 <X size={20} />
               </button>
             </div>
-            
+
             <form onSubmit={modalMode === 'create' ? handleCreateUser : handleChangePassword} className="p-6 space-y-4">
               {modalMode === 'create' && (
                 <>
@@ -201,28 +206,28 @@ const UserManagement: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Função</label>
                     <div className="flex gap-4 mt-2">
-                        <label className="flex items-center cursor-pointer">
-                            <input 
-                                type="radio" 
-                                name="role" 
-                                value="user" 
-                                checked={role === 'user'} 
-                                onChange={() => setRole('user')}
-                                className="mr-2 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-slate-700">Usuário Padrão</span>
-                        </label>
-                        <label className="flex items-center cursor-pointer">
-                            <input 
-                                type="radio" 
-                                name="role" 
-                                value="admin" 
-                                checked={role === 'admin'} 
-                                onChange={() => setRole('admin')}
-                                className="mr-2 text-blue-600 focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-slate-700">Administrador</span>
-                        </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="user"
+                          checked={role === 'user'}
+                          onChange={() => setRole('user')}
+                          className="mr-2 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-slate-700">Usuário Padrão</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="admin"
+                          checked={role === 'admin'}
+                          onChange={() => setRole('admin')}
+                          className="mr-2 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-sm text-slate-700">Administrador</span>
+                      </label>
                     </div>
                   </div>
                 </>
@@ -230,7 +235,7 @@ const UserManagement: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                    {modalMode === 'create' ? 'Senha Inicial' : 'Nova Senha'}
+                  {modalMode === 'create' ? 'Senha Inicial' : 'Nova Senha'}
                 </label>
                 <div className="relative">
                   <Key className="absolute left-3 top-3 text-slate-400" size={18} />
