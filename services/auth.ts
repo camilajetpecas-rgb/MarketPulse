@@ -81,6 +81,10 @@ export const authService = {
 
   registerUser: async (user: Omit<User, 'id' | 'createdAt'>): Promise<User> => {
     // WARNING: This signs in the new user immediately in the browser context!
+    if (!user.password) {
+      throw new Error("Password is required for registration");
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: user.email,
       password: user.password,
