@@ -10,6 +10,9 @@ import Trends from './pages/Trends';
 import Catalog from './pages/Catalog';
 import TitleBuilder from './pages/TitleBuilder';
 import GeoTrends from './pages/GeoTrends';
+import AdsManager from './pages/AdsManager';
+import ListingWizard from './pages/ListingWizard';
+import MarketRadar from './pages/MarketRadar';
 import Login from './pages/Login';
 import UserManagement from './pages/UserManagement';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -32,8 +35,8 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
       <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <div className="md:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between shrink-0">
-            <span className="font-bold text-lg text-slate-800">MarketPulse</span>
-          <button 
+          <span className="font-bold text-lg text-slate-800">MarketPulse</span>
+          <button
             onClick={() => setSidebarOpen(true)}
             className="p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
           >
@@ -51,21 +54,24 @@ const ProtectedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
 const App: React.FC = () => {
   return (
     <AuthProvider>
-        <Router>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              
-              <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
-              <Route path="/analyzer" element={<ProtectedLayout><Analyzer /></ProtectedLayout>} />
-              <Route path="/title-builder" element={<ProtectedLayout><TitleBuilder /></ProtectedLayout>} />
-              <Route path="/trends" element={<ProtectedLayout><Trends /></ProtectedLayout>} />
-              <Route path="/catalog" element={<ProtectedLayout><Catalog /></ProtectedLayout>} />
-              <Route path="/geo-trends" element={<ProtectedLayout><GeoTrends /></ProtectedLayout>} />
-              <Route path="/users" element={<ProtectedLayout><UserManagement /></ProtectedLayout>} />
-              
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-        </Router>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/" element={<ProtectedLayout><Dashboard /></ProtectedLayout>} />
+          <Route path="/analyzer" element={<ProtectedLayout><Analyzer /></ProtectedLayout>} />
+          <Route path="/listing-wizard" element={<ProtectedLayout><ListingWizard /></ProtectedLayout>} />
+          <Route path="/ads-manager" element={<ProtectedLayout><AdsManager /></ProtectedLayout>} />
+          <Route path="/market-radar" element={<ProtectedLayout><MarketRadar /></ProtectedLayout>} />
+          <Route path="/title-builder" element={<ProtectedLayout><TitleBuilder /></ProtectedLayout>} />
+          <Route path="/trends" element={<ProtectedLayout><Trends /></ProtectedLayout>} />
+          <Route path="/catalog" element={<ProtectedLayout><Catalog /></ProtectedLayout>} />
+          <Route path="/geo-trends" element={<ProtectedLayout><GeoTrends /></ProtectedLayout>} />
+          <Route path="/users" element={<ProtectedLayout><UserManagement /></ProtectedLayout>} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 };
