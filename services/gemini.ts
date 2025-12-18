@@ -689,3 +689,57 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
         };
     }
 }
+
+export interface MagicListingResult {
+    titles: string[];
+    description: string;
+    specs: Record<string, string>;
+}
+
+export const generateFullListing = async (productName: string, characteristics: string, category: string): Promise<MagicListingResult> => {
+    try {
+        const prompt = `Atue como um Especialista em Cadastro de Produtos em Marketplace.
+        Crie um anúncio completo para o produto: "${productName}".
+            Categoria: "${category || 'Geral'}".
+        Características fornecidas: "${characteristics || 'Produto padrão'}".
+
+            Gere:
+        1. 3 Títulos SEO(Um focado em ML < 60 chars, um focado em Amazon, um focado em conversão).
+        2. Uma Descrição vendedora(Copywriting) com Bullet Points e quebra de objeções.
+        3. Uma Ficha Técnica "Tentativa"(Specs): Estime Peso, Medidas, Voltagem, Material com base no tipo de produto(se não informado).
+
+        Schema JSON:
+        {
+            "titles": ["string"],
+                "description": "string (markdown)",
+                    "specs": { "key": "value" }
+        } `;
+
+        const response = await ai.models.generateContent({
+             model: "gemini-2.5-flash",
+             contents: prompt,
+             config: {
+                 responseMimeType: "application/json",
+                 responseSchema: {
+                     type: Type.OBJECT,
+                     properties: {
+                         titles: { type: Type.ARRAY, items: { type: Type.STRING } },
+                         description: { type: Type.STRING },
+                         specs: { 
+                             type: Type.OBJECT,
+                             properties: {},
+                             additionalProperties: true
+                         }
+                     },
+                     required: ["titles", "description", "specs"]
+                 }
+             }
+        });
+        
+        return JSON.parse(response.text || "{}") as MagicListingResult;
+
+    } catch (e) {
+        console.error("Erro no Magic Builder:", e);
+        throw e;
+    }
+}
