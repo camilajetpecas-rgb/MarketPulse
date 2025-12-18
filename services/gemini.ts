@@ -563,12 +563,12 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
 
 export const generateAdsAudit = async (context: string): Promise<string> => {
     try {
-        const prompt = \`Você é um ESPECIALISTA SÊNIOR EM TRÁFEGO PAGO (Mercado Ads, Amazon Ads, Google Ads).
+        const prompt = `Você é um ESPECIALISTA SÊNIOR EM TRÁFEGO PAGO (Mercado Ads, Amazon Ads, Google Ads).
         
         Analise os dados brutos da campanha abaixo e forneça uma auditoria estratégica RÁPIDA E DIRETA.
         
         DADOS DA CAMPANHA:
-        "\${context}"
+        "${context}"
         
         Responda neste formato estrito:
         1. 🚦 **Diagnóstico**: (Status em 1 frase: Crítico, Atenção ou Saudável)
@@ -577,7 +577,7 @@ export const generateAdsAudit = async (context: string): Promise<string> => {
         4. 📈 **Ação Imediata 2**: Próximo passo.
         5. 💡 **Insight Extra**: Uma dica de ouro sobre conversão ou qualidade do anúncio baseada nos números.
         
-        Seja curto, grosso e focado em LUCRO.\`;
+        Seja curto, grosso e focado em LUCRO.`;
 
         const response = await ai.models.generateContent({
             model: "gemini-2.5-flash",
@@ -622,7 +622,7 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
         const text = (response.text || "").substring(0, 20000);
 
         const formatPrompt = `Converta a análise geográfica em JSON estrito.
-            Dados: ${ text }
+            Dados: ${text}
 
         REGRAS:
         1. Limite 'relatedQueries' a no máximo 10 itens.
@@ -679,11 +679,11 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
                 { region: "Rio Grande do Sul", interestLevel: 55 }
             ],
             relatedQueries: [
-                `${ product } preço`,
-                `melhor ${ product } `,
-                `oferta ${ product } `,
-                `loja ${ product } `,
-                `${ product } mercado livre`
+                `${product} preço`,
+                `melhor ${product} `,
+                `oferta ${product} `,
+                `loja ${product} `,
+                `${product} mercado livre`
             ],
             seasonalInsight: "A demanda segue a densidade populacional e frota de veículos (no caso de peças). Dados estimados devido a instabilidade momentânea na coleta em tempo real."
         };
@@ -716,26 +716,26 @@ export const generateFullListing = async (productName: string, characteristics: 
         } `;
 
         const response = await ai.models.generateContent({
-             model: "gemini-2.5-flash",
-             contents: prompt,
-             config: {
-                 responseMimeType: "application/json",
-                 responseSchema: {
-                     type: Type.OBJECT,
-                     properties: {
-                         titles: { type: Type.ARRAY, items: { type: Type.STRING } },
-                         description: { type: Type.STRING },
-                         specs: { 
-                             type: Type.OBJECT,
-                             properties: {},
-                             additionalProperties: true
-                         }
-                     },
-                     required: ["titles", "description", "specs"]
-                 }
-             }
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        titles: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        description: { type: Type.STRING },
+                        specs: {
+                            type: Type.OBJECT,
+                            properties: {},
+                            additionalProperties: true
+                        }
+                    },
+                    required: ["titles", "description", "specs"]
+                }
+            }
         });
-        
+
         return JSON.parse(response.text || "{}") as MagicListingResult;
 
     } catch (e) {

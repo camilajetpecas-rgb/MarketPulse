@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Sparkles, ShoppingBag, Copy, Info, Package } from 'lucide-react';
 import { generateFullListing } from '../services/gemini';
 
 const ListingWizard: React.FC = () => {
