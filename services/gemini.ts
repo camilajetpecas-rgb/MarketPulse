@@ -11,13 +11,13 @@ Você não é apenas um consultor, você é o sistema que decide quem aparece na
 Analise friamente Título, Preço, Descrição e SEO.`;
 
 export const analyzeListing = async (
-  title: string,
-  description: string,
-  price: string,
-  platform: string
+    title: string,
+    description: string,
+    price: string,
+    platform: string
 ): Promise<AdAnalysisResult> => {
-  try {
-    const prompt = `Faça o Raio-X de Algoritmo deste anúncio do ${platform}.
+    try {
+        const prompt = `Faça o Raio-X de Algoritmo deste anúncio do ${platform}.
     Título: ${title}
     Preço: ${price}
     Descrição: ${description}
@@ -29,54 +29,54 @@ export const analyzeListing = async (
     3. Plano de Ação: Uma lista de 3 a 5 tarefas práticas e imperativas para o vendedor executar AGORA (ex: "Adicionar ficha técnica completa", "Incluir vídeo no anúncio").
     4. Análise padrão: Pontos fortes, fracos, keywords SEO, melhoria de descrição e análise de preço.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        systemInstruction: ANALYST_INSTRUCTION,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            score: { type: Type.INTEGER, description: "Score from 0 to 100" },
-            tags: {
-                type: Type.ARRAY,
-                items: {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                systemInstruction: ANALYST_INSTRUCTION,
+                responseMimeType: "application/json",
+                responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        label: { type: Type.STRING, description: "Nome da tag ex: Título Otimizado" },
-                        type: { type: Type.STRING, enum: ["positive", "negative", "neutral"] }
-                    }
+                        score: { type: Type.INTEGER, description: "Score from 0 to 100" },
+                        tags: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    label: { type: Type.STRING, description: "Nome da tag ex: Título Otimizado" },
+                                    type: { type: Type.STRING, enum: ["positive", "negative", "neutral"] }
+                                }
+                            },
+                            description: "Tags técnicas de algoritmo"
+                        },
+                        actionPlan: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista de tarefas práticas" },
+                        strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        seoKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        descriptionImprovement: { type: Type.STRING },
+                        priceAnalysis: { type: Type.STRING },
+                    },
+                    required: ["score", "tags", "actionPlan", "strengths", "weaknesses", "seoKeywords", "descriptionImprovement", "priceAnalysis"],
                 },
-                description: "Tags técnicas de algoritmo"
             },
-            actionPlan: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Lista de tarefas práticas" },
-            strengths: { type: Type.ARRAY, items: { type: Type.STRING } },
-            weaknesses: { type: Type.ARRAY, items: { type: Type.STRING } },
-            seoKeywords: { type: Type.ARRAY, items: { type: Type.STRING } },
-            descriptionImprovement: { type: Type.STRING },
-            priceAnalysis: { type: Type.STRING },
-          },
-          required: ["score", "tags", "actionPlan", "strengths", "weaknesses", "seoKeywords", "descriptionImprovement", "priceAnalysis"],
-        },
-      },
-    });
+        });
 
-    if (response.text) {
-      return JSON.parse(response.text) as AdAnalysisResult;
+        if (response.text) {
+            return JSON.parse(response.text) as AdAnalysisResult;
+        }
+        throw new Error("Resposta vazia da IA");
+    } catch (error) {
+        console.error("Erro na análise:", error);
+        throw error;
     }
-    throw new Error("Resposta vazia da IA");
-  } catch (error) {
-    console.error("Erro na análise:", error);
-    throw error;
-  }
 };
 
 export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData> => {
-  try {
-    // PASSO 1: Busca Focada em Logística, Ficha Técnica e LOCALIZAÇÃO
-    // Adicionamos queries de busca específicas para forçar o retorno de metadados técnicos
-    const searchPrompt = `Você é um AUDITOR DE LOGÍSTICA DE E-COMMERCE. 
+    try {
+        // PASSO 1: Busca Focada em Logística, Ficha Técnica e LOCALIZAÇÃO
+        // Adicionamos queries de busca específicas para forçar o retorno de metadados técnicos
+        const searchPrompt = `Você é um AUDITOR DE LOGÍSTICA DE E-COMMERCE. 
     Preciso extrair os dados técnicos deste produto: ${url}.
     
     ALVO PRINCIPAL: DIMENSÕES, PESO E LOCALIZAÇÃO DO ESTOQUE.
@@ -94,22 +94,22 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
     - Se é medida do produto ou da embalagem.
     `;
 
-    const searchResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: searchPrompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-      }
-    });
+        const searchResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: searchPrompt,
+            config: {
+                tools: [{ googleSearch: {} }],
+            }
+        });
 
-    const searchResultText = searchResponse.text;
+        const searchResultText = searchResponse.text;
 
-    if (!searchResultText) {
-       throw new Error("A busca não retornou dados textuais suficientes.");
-    }
+        if (!searchResultText) {
+            throw new Error("A busca não retornou dados textuais suficientes.");
+        }
 
-    // PASSO 2: Conversão Inteligente com Estimativa Obrigatória
-    const formatPrompt = `Analise os dados brutos abaixo e preencha o JSON de logística.
+        // PASSO 2: Conversão Inteligente com Estimativa Obrigatória
+        const formatPrompt = `Analise os dados brutos abaixo e preencha o JSON de logística.
     
     Dados brutos da pesquisa:
     ${searchResultText}
@@ -127,87 +127,87 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
     
     Schema desejado: JSON estrito.`;
 
-    const jsonResponse = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: formatPrompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            title: { type: Type.STRING },
-            price: { type: Type.STRING },
-            description: { type: Type.STRING },
-            platform: { type: Type.STRING },
-            seller: { type: Type.STRING },
-            stock: { type: Type.STRING },
-            rating: { type: Type.STRING },
-            reviewsCount: { type: Type.STRING },
-            itemLocation: { type: Type.STRING, description: "Cidade e Estado do estoque ex: São Paulo, SP" },
-            
-            productDimensions: {
-                type: Type.OBJECT,
-                properties: {
-                    height: { type: Type.STRING, description: "Altura cm" },
-                    width: { type: Type.STRING, description: "Largura cm" },
-                    length: { type: Type.STRING, description: "Comp cm" },
-                    weight: { type: Type.STRING, description: "Peso kg" },
-                    source: { type: Type.STRING, enum: ["extracted", "estimated"] }
+        const jsonResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: formatPrompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        title: { type: Type.STRING },
+                        price: { type: Type.STRING },
+                        description: { type: Type.STRING },
+                        platform: { type: Type.STRING },
+                        seller: { type: Type.STRING },
+                        stock: { type: Type.STRING },
+                        rating: { type: Type.STRING },
+                        reviewsCount: { type: Type.STRING },
+                        itemLocation: { type: Type.STRING, description: "Cidade e Estado do estoque ex: São Paulo, SP" },
+
+                        productDimensions: {
+                            type: Type.OBJECT,
+                            properties: {
+                                height: { type: Type.STRING, description: "Altura cm" },
+                                width: { type: Type.STRING, description: "Largura cm" },
+                                length: { type: Type.STRING, description: "Comp cm" },
+                                weight: { type: Type.STRING, description: "Peso kg" },
+                                source: { type: Type.STRING, enum: ["extracted", "estimated"] }
+                            }
+                        },
+                        packageDimensions: {
+                            type: Type.OBJECT,
+                            properties: {
+                                height: { type: Type.STRING, description: "Altura cm" },
+                                width: { type: Type.STRING, description: "Largura cm" },
+                                length: { type: Type.STRING, description: "Comp cm" },
+                                weight: { type: Type.STRING, description: "Peso kg" },
+                                source: { type: Type.STRING, enum: ["extracted", "estimated"] }
+                            }
+                        },
+
+                        logistics: { type: Type.STRING },
+                        listingAge: { type: Type.STRING },
+                        salesEstimate: { type: Type.STRING }
+                    },
+                    required: ["title", "description"]
                 }
-            },
-            packageDimensions: {
-                type: Type.OBJECT,
-                properties: {
-                    height: { type: Type.STRING, description: "Altura cm" },
-                    width: { type: Type.STRING, description: "Largura cm" },
-                    length: { type: Type.STRING, description: "Comp cm" },
-                    weight: { type: Type.STRING, description: "Peso kg" },
-                    source: { type: Type.STRING, enum: ["extracted", "estimated"] }
-                }
-            },
+            }
+        });
 
-            logistics: { type: Type.STRING },
-            listingAge: { type: Type.STRING },
-            salesEstimate: { type: Type.STRING }
-          },
-          required: ["title", "description"]
+        if (jsonResponse.text) {
+            const parsed = JSON.parse(jsonResponse.text);
+
+            let cleanPlatform = Platform.GENERIC;
+            if (parsed.platform) {
+                const p = parsed.platform.toLowerCase();
+                if (p.includes('mercado') || p.includes('libre')) cleanPlatform = Platform.MERCADO_LIVRE;
+                else if (p.includes('amazon')) cleanPlatform = Platform.AMAZON;
+                else if (p.includes('shopee')) cleanPlatform = Platform.SHOPEE;
+            }
+
+            // Normalização final para garantir que a UI não quebre
+            const dimensionsDetails = parsed.productDimensions ? {
+                height: parsed.productDimensions.height,
+                width: parsed.productDimensions.width,
+                length: parsed.productDimensions.length
+            } : undefined;
+
+            const weight = parsed.productDimensions?.weight || parsed.packageDimensions?.weight;
+
+            return {
+                ...parsed,
+                platform: cleanPlatform,
+                dimensionsDetails,
+                weight
+            } as ExtractedAdData;
         }
-      }
-    });
+        throw new Error("Não foi possível processar os dados encontrados.");
 
-    if (jsonResponse.text) {
-        const parsed = JSON.parse(jsonResponse.text);
-        
-        let cleanPlatform = Platform.GENERIC;
-        if (parsed.platform) {
-            const p = parsed.platform.toLowerCase();
-            if (p.includes('mercado') || p.includes('libre')) cleanPlatform = Platform.MERCADO_LIVRE;
-            else if (p.includes('amazon')) cleanPlatform = Platform.AMAZON;
-            else if (p.includes('shopee')) cleanPlatform = Platform.SHOPEE;
-        }
-
-        // Normalização final para garantir que a UI não quebre
-        const dimensionsDetails = parsed.productDimensions ? {
-            height: parsed.productDimensions.height,
-            width: parsed.productDimensions.width,
-            length: parsed.productDimensions.length
-        } : undefined;
-        
-        const weight = parsed.productDimensions?.weight || parsed.packageDimensions?.weight;
-
-        return {
-            ...parsed,
-            platform: cleanPlatform,
-            dimensionsDetails, 
-            weight
-        } as ExtractedAdData;
+    } catch (error) {
+        console.error("Erro na extração de URL:", error);
+        throw error;
     }
-    throw new Error("Não foi possível processar os dados encontrados.");
-
-  } catch (error) {
-    console.error("Erro na extração de URL:", error);
-    throw error;
-  }
 };
 
 export const generateCopywriting = async (data: ExtractedAdData): Promise<CopywritingResult> => {
@@ -247,8 +247,8 @@ export const generateCopywriting = async (data: ExtractedAdData): Promise<Copywr
 }
 
 export const analyzeTrends = async (category: string): Promise<TrendResult> => {
-  try {
-    const prompt = `Pesquise no Google sobre as tendências atuais de mercado no Brasil para a categoria: "${category}".
+    try {
+        const prompt = `Pesquise no Google sobre as tendências atuais de mercado no Brasil para a categoria: "${category}".
     
     Realize pesquisas específicas para descobrir:
     1. Quais são os Top 5 produtos mais vendidos no MERCADO LIVRE nesta categoria.
@@ -264,25 +264,25 @@ export const analyzeTrends = async (category: string): Promise<TrendResult> => {
     
     Importante: Utilize a ferramenta de busca para obter dados recentes.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
-    });
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                tools: [{ googleSearch: {} }],
+            },
+        });
 
-    const text = response.text || "";
-    const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
-      ?.map((chunk: any) => ({
-        title: chunk.web?.title || "Fonte Web",
-        uri: chunk.web?.uri || "#"
-      }))
-      .filter((s: any) => s.uri !== "#") || [];
+        const text = response.text || "";
+        const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks
+            ?.map((chunk: any) => ({
+                title: chunk.web?.title || "Fonte Web",
+                uri: chunk.web?.uri || "#"
+            }))
+            .filter((s: any) => s.uri !== "#") || [];
 
-    const formattingResponse = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: `Converta a seguinte análise de mercado em JSON estrito.
+        const formattingResponse = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: `Converta a seguinte análise de mercado em JSON estrito.
         Texto da análise: ${text}
         
         Schema desejado:
@@ -297,39 +297,39 @@ export const analyzeTrends = async (category: string): Promise<TrendResult> => {
              "shopee": ["string (top 5 Shopee)"]
           }
         }`,
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: Type.OBJECT,
-                properties: {
-                    overview: { type: Type.STRING },
-                    trendingProducts: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    priceRange: { type: Type.STRING },
-                    opportunityLevel: { type: Type.STRING, enum: ["Baixa", "Média", "Alta"] },
-                    marketplaceSpecifics: {
-                        type: Type.OBJECT,
-                        properties: {
-                            mercadoLivre: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            amazon: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            shopee: { type: Type.ARRAY, items: { type: Type.STRING } }
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        overview: { type: Type.STRING },
+                        trendingProducts: { type: Type.ARRAY, items: { type: Type.STRING } },
+                        priceRange: { type: Type.STRING },
+                        opportunityLevel: { type: Type.STRING, enum: ["Baixa", "Média", "Alta"] },
+                        marketplaceSpecifics: {
+                            type: Type.OBJECT,
+                            properties: {
+                                mercadoLivre: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                amazon: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                shopee: { type: Type.ARRAY, items: { type: Type.STRING } }
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
 
-    const structuredData = JSON.parse(formattingResponse.text || "{}");
-    
-    return {
-        ...structuredData,
-        sources
-    };
+        const structuredData = JSON.parse(formattingResponse.text || "{}");
 
-  } catch (error) {
-    console.error("Erro na busca de tendências:", error);
-    throw error;
-  }
+        return {
+            ...structuredData,
+            sources
+        };
+
+    } catch (error) {
+        console.error("Erro na busca de tendências:", error);
+        throw error;
+    }
 };
 
 export const searchMercadoLivreCatalog = async (category: string): Promise<CatalogItem[]> => {
@@ -466,7 +466,7 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
           "highVolumeKeywords": ["string (palavras chaves)"]
         }`;
 
-         const jsonResponse = await ai.models.generateContent({
+        const jsonResponse = await ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: formatPrompt,
             config: {
@@ -474,9 +474,9 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        competitorTitles: { 
-                            type: Type.ARRAY, 
-                            items: { 
+                        competitorTitles: {
+                            type: Type.ARRAY,
+                            items: {
                                 type: Type.OBJECT,
                                 properties: {
                                     title: { type: Type.STRING },
@@ -485,7 +485,7 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
                                     sellerName: { type: Type.STRING },
                                     itemLocation: { type: Type.STRING }
                                 }
-                            } 
+                            }
                         },
                         patternAnalysis: { type: Type.STRING },
                         suggestedTitles: { type: Type.ARRAY, items: { type: Type.STRING } },
@@ -498,8 +498,18 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
         return JSON.parse(jsonResponse.text || "{}") as TitleBenchmarkResult;
 
     } catch (error) {
-        console.error("Erro ao gerar títulos:", error);
-        throw error;
+        console.error("Erro ao gerar títulos (usando fallback):", error);
+        // Fallback para não quebrar a UI
+        return {
+            competitorTitles: [],
+            patternAnalysis: "Não foi possível analisar os padrões no momento devido a uma instabilidade na conexão com os marketplaces. Tente novamente em alguns segundos.",
+            suggestedTitles: [
+                `${keyword} Promoção`,
+                `Oferta ${keyword}`,
+                `Melhor preço ${keyword}`
+            ],
+            highVolumeKeywords: [keyword, "oferta", "original", "novo"]
+        };
     }
 }
 
@@ -556,12 +566,12 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        topRegions: { 
-                            type: Type.ARRAY, 
-                            items: { 
-                                type: Type.OBJECT, 
-                                properties: { region: { type: Type.STRING }, interestLevel: { type: Type.NUMBER } } 
-                            } 
+                        topRegions: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: { region: { type: Type.STRING }, interestLevel: { type: Type.NUMBER } }
+                            }
                         },
                         relatedQueries: { type: Type.ARRAY, items: { type: Type.STRING } },
                         seasonalInsight: { type: Type.STRING }
