@@ -2,7 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AdAnalysisResult, TrendResult, ExtractedAdData, Platform, CopywritingResult, CatalogItem, TitleBenchmarkResult, GeoTrendResult } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 // System instruction for the analyst persona
 const ANALYST_INSTRUCTION = `Você é o ALGORITMO DE RANQUEAMENTO dos maiores marketplaces (Mercado Livre, Amazon, Shopee).
