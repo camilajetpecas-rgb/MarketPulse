@@ -112,32 +112,46 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
     - Se é medida do produto ou da embalagem.
     `;
 
-        const searchResponse = await ai.models.generateContent({
+        // Executa busca pela URL
+        const urlSearchPromise = ai.models.generateContent({
             model: "gemini-2.5-flash",
             contents: searchPrompt,
-            config: {
-                tools: [{ googleSearch: {} }],
-            }
+            config: { tools: [{ googleSearch: {} }] }
         });
 
-        let searchResultText = searchResponse.text;
+        // Executa busca pelo NOME DO PRODUTO (Keywords) em paralelo (Backup Garantido)
+        let keywordSearchPromise: Promise<any> | null = null;
+        if (urlKeywords) {
+            console.log("Iniciando busca paralela por keywords:", urlKeywords);
+            const keywordPrompt = `Pesquise especificamente por: Ficha Técnica, Dimensões e Preço de "${urlKeywords}".
+            Preciso das medidas (altura, largura, comprimento) e peso do produto/embalagem.`;
 
-        // PASSO 1.5: Fallback para Busca Genérica se a URL falhar
-        if (!searchResultText && urlKeywords) {
-            console.log("Busca direta falhou, tentando busca por nome do produto:", urlKeywords);
-            const fallbackPrompt = `Pesquise especificamente por: Ficha Técnica e Preço de "${urlKeywords}".
-             Priorize encontrar medidas (dimensões) e peso.`;
-
-            const fallbackResponse = await ai.models.generateContent({
+            keywordSearchPromise = ai.models.generateContent({
                 model: "gemini-2.5-flash",
-                contents: fallbackPrompt,
+                contents: keywordPrompt,
                 config: { tools: [{ googleSearch: {} }] }
             });
-            searchResultText = fallbackResponse.text;
         }
 
-        if (!searchResultText) {
-            throw new Error("A busca não retornou dados textuais suficientes.");
+        const [urlResponse, keywordResponse] = await Promise.all([
+            urlSearchPromise,
+            keywordSearchPromise ? keywordSearchPromise : Promise.resolve(null)
+        ]);
+
+        const urlText = urlResponse.text || "";
+        const keywordText = keywordResponse ? keywordResponse.text : "";
+
+        // Combina os contextos para o LLM processar
+        const searchResultText = `
+        --- DADOS DA URL ESPECÍFICA ---
+        ${urlText}
+        
+        --- DADOS GERAIS DO PRODUTO (BUSCA POR NOME) ---
+        ${keywordText || "Nenhuma informação adicional encontrada."}
+        `;
+
+        if (!urlText && !keywordText) {
+            throw new Error("A busca não retornou dados textuais suficientes em nenhuma das tentativas.");
         }
 
         // PASSO 2: Conversão Inteligente com Estimativa Obrigatória
