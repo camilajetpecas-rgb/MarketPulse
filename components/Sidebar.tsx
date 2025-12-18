@@ -20,8 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { icon: <PenTool size={20} />, name: 'Criador Mágico', path: '/listing-wizard' },
     { icon: <TrendingUp size={20} />, name: 'Gestor de ADS', path: '/ads-manager' },
     { icon: <Map size={20} />, name: 'Radar de Mercado', path: '/market-radar' },
-    { icon: <BookOpen size={20} />, name: 'Catálogo ML', path: '/catalog' },
-    { icon: <Map size={20} />, name: 'Mapa de Demanda', path: '/geo-trends' },
   ];
 
   if (user?.role === 'admin') {
