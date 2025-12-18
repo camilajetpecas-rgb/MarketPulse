@@ -120,7 +120,21 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
             }
         });
 
-        const searchResultText = searchResponse.text;
+        let searchResultText = searchResponse.text;
+
+        // PASSO 1.5: Fallback para Busca Genérica se a URL falhar
+        if (!searchResultText && urlKeywords) {
+            console.log("Busca direta falhou, tentando busca por nome do produto:", urlKeywords);
+            const fallbackPrompt = `Pesquise especificamente por: Ficha Técnica e Preço de "${urlKeywords}".
+             Priorize encontrar medidas (dimensões) e peso.`;
+
+            const fallbackResponse = await ai.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: fallbackPrompt,
+                config: { tools: [{ googleSearch: {} }] }
+            });
+            searchResultText = fallbackResponse.text;
+        }
 
         if (!searchResultText) {
             throw new Error("A busca não retornou dados textuais suficientes.");
@@ -143,7 +157,9 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
     3. **Estimativa de Último Recurso**: Se não houver NENHUMA medida no texto, ESTIME com base no tipo de produto (ex: se for 'Celular', use 15x8x5cm, 0.4kg). NÃO RETORNE NULL. Use seu conhecimento de mundo.
     4. **Localização**: Extraia a cidade e estado do vendedor/estoque. Se não encontrar, deixe vazio. Formato ideal: "Cidade, UF".
     
-    Schema desejado: JSON estrito.`;
+    Schema desejado: JSON estrito.
+    
+    NOTA: Se a busca foi genérica (pelo nome do produto), preencha 'seller' como 'Vários Vendedores' e 'itemLocation' como 'Brasil'.`;
 
         const jsonResponse = await ai.models.generateContent({
             model: "gemini-2.5-flash",
