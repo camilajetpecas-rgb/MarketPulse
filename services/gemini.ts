@@ -561,22 +561,52 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
     }
 }
 
+export const generateAdsAudit = async (context: string): Promise<string> => {
+    try {
+        const prompt = \`Você é um ESPECIALISTA SÊNIOR EM TRÁFEGO PAGO (Mercado Ads, Amazon Ads, Google Ads).
+        
+        Analise os dados brutos da campanha abaixo e forneça uma auditoria estratégica RÁPIDA E DIRETA.
+        
+        DADOS DA CAMPANHA:
+        "\${context}"
+        
+        Responda neste formato estrito:
+        1. 🚦 **Diagnóstico**: (Status em 1 frase: Crítico, Atenção ou Saudável)
+        2. 💰 **Análise Financeira**: Comente sobre o ROI/ROAS implícito. Estão queimando dinheiro?
+        3. 🎯 **Ação Imediata 1**: O que fazer HOJE? (Ex: Pausar, Aumentar Bid, Negativar palavra).
+        4. 📈 **Ação Imediata 2**: Próximo passo.
+        5. 💡 **Insight Extra**: Uma dica de ouro sobre conversão ou qualidade do anúncio baseada nos números.
+        
+        Seja curto, grosso e focado em LUCRO.\`;
+
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+
+        return response.text || "Não foi possível gerar a auditoria. Tente detalhar mais os dados.";
+    } catch (error) {
+        console.error("Erro na auditoria de ADS:", error);
+        throw error;
+    }
+}
+
 export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult> => {
     try {
         const prompt = `Realize uma pesquisa de DEMANDA DE MERCADO GEOGRÁFICA para o produto: "${product}".
+
+            Objetivo: Identificar ONDE(Regiões / Cidades) e COMO(Termos) os brasileiros buscam este produto.
         
-        Objetivo: Identificar ONDE (Regiões/Cidades) e COMO (Termos) os brasileiros buscam este produto.
+        1. ** Geolocalização e Interesse **:
+        - Pesquise por "vendas de ${product} por estado brasil", "onde comprar ${product} cidade".
+           - Tente inferir quais regiões têm maior demanda(ex: produtos automotivos em SP / MG / SUL, produtos de praia no NE).
+           - Liste 5 regiões(Estados ou Cidades) com um nível de interesse estimado(0 - 100).
         
-        1. **Geolocalização e Interesse**:
-           - Pesquise por "vendas de ${product} por estado brasil", "onde comprar ${product} cidade".
-           - Tente inferir quais regiões têm maior demanda (ex: produtos automotivos em SP/MG/SUL, produtos de praia no NE).
-           - Liste 5 regiões (Estados ou Cidades) com um nível de interesse estimado (0-100).
+        2. ** Termos Relacionados **:
+        - O que o usuário digita ? Ex : "preço", "melhor marca", "promoção".
         
-        2. **Termos Relacionados**:
-           - O que o usuário digita? Ex: "preço", "melhor marca", "promoção".
-        
-        3. **Sazonalidade**:
-           - Quando vende mais? (Verão, Inverno, Dia das Mães, etc).
+        3. ** Sazonalidade **:
+        - Quando vende mais ? (Verão, Inverno, Dia das Mães, etc).
         
         Seja direto.`;
 
@@ -592,19 +622,19 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
         const text = (response.text || "").substring(0, 20000);
 
         const formatPrompt = `Converta a análise geográfica em JSON estrito.
-        Dados: ${text}
-        
+            Dados: ${ text }
+
         REGRAS:
         1. Limite 'relatedQueries' a no máximo 10 itens.
         2. Limite 'seasonalInsight' a um parágrafo curto.
-        3. Se os dados forem vagos, faça uma estimativa lógica baseada em grandes centros (SP, RJ, MG).
-        
-        Schema:
+        3. Se os dados forem vagos, faça uma estimativa lógica baseada em grandes centros(SP, RJ, MG).
+
+            Schema:
         {
-            "topRegions": [{ "region": "string (Estado/Cidade)", "interestLevel": number (0-100) }],
-            "relatedQueries": ["string (termos de busca)"],
-            "seasonalInsight": "string (resumo sobre quando vende mais)"
-        }`;
+            "topRegions": [{ "region": "string (Estado/Cidade)", "interestLevel": number(0 - 100) }],
+                "relatedQueries": ["string (termos de busca)"],
+                    "seasonalInsight": "string (resumo sobre quando vende mais)"
+        } `;
 
         const jsonResponse = await ai.models.generateContent({
             model: "gemini-2.5-flash",
@@ -649,11 +679,11 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
                 { region: "Rio Grande do Sul", interestLevel: 55 }
             ],
             relatedQueries: [
-                `${product} preço`,
-                `melhor ${product}`,
-                `oferta ${product}`,
-                `loja ${product}`,
-                `${product} mercado livre`
+                `${ product } preço`,
+                `melhor ${ product } `,
+                `oferta ${ product } `,
+                `loja ${ product } `,
+                `${ product } mercado livre`
             ],
             seasonalInsight: "A demanda segue a densidade populacional e frota de veículos (no caso de peças). Dados estimados devido a instabilidade momentânea na coleta em tempo real."
         };
