@@ -76,13 +76,31 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
     try {
         // PASSO 1: Busca Focada em Logística, Ficha Técnica e LOCALIZAÇÃO
         // Adicionamos queries de busca específicas para forçar o retorno de metadados técnicos
+
+        // Tenta extrair palavras-chave da URL para ajudar na busca (Ex: .../aditivo-radiador... -> "aditivo radiador")
+        let urlKeywords = "";
+        try {
+            const urlObj = new URL(url);
+            const pathSegments = urlObj.pathname.split('/');
+            // Pega o segmento mais longo que geralmente é o nome do produto
+            const productSlug = pathSegments.sort((a, b) => b.length - a.length)[0];
+            if (productSlug) {
+                urlKeywords = productSlug.replace(/-/g, ' ').replace(/_/g, ' ');
+            }
+        } catch (e) {
+            console.log("Erro ao parsear URL para keywords", e);
+        }
+
         const searchPrompt = `Você é um AUDITOR DE LOGÍSTICA DE E-COMMERCE. 
-    Preciso extrair os dados técnicos deste produto: ${url}.
+    Preciso extrair os dados técnicos deste produto.
+    
+    URL DO PRODUTO: ${url}
+    TERMOS DO PRODUTO (EXTRAÍDOS DA URL): ${urlKeywords}
     
     ALVO PRINCIPAL: DIMENSÕES, PESO E LOCALIZAÇÃO DO ESTOQUE.
     
     Execute buscas para encontrar:
-    1. O produto exato e suas "Características Principais" ou "Ficha Técnica".
+    1. O produto exato "${urlKeywords}" no Mercado Livre/Amazon/Shopee e suas "Características Principais" ou "Ficha Técnica".
     2. Procure padrões numéricos de medidas no texto: "20x30x10", "20cm", "kg", "gramas".
     3. Identifique a LOCALIZAÇÃO DO VENDEDOR ou de onde o produto é enviado (Cidade/Estado). Procure por termos como "Enviado de", "Localização", "Vendido por... de...".
     4. Se não achar no site original, procure produtos idênticos em outros sites para estimar as medidas.
