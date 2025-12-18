@@ -124,7 +124,7 @@ const MarketRadar: React.FC = () => {
                             <div className="bg-yellow-50 p-5 rounded-xl border border-yellow-200">
                                 <h4 className="font-bold text-yellow-800 mb-3 flex items-center"><TrendingUp size={16} className="mr-2" /> Mercado Livre</h4>
                                 <ul className="text-sm space-y-2 text-slate-700">
-                                    {trendResult.marketplaceSpecifics.mercadoLivre.map((item, i) => (
+                                    {trendResult.marketplaceSpecifics?.mercadoLivre.map((item, i) => (
                                         <li key={i}>• {item}</li>
                                     ))}
                                 </ul>
@@ -133,7 +133,7 @@ const MarketRadar: React.FC = () => {
                             <div className="bg-slate-100 p-5 rounded-xl border border-slate-300">
                                 <h4 className="font-bold text-slate-800 mb-3 flex items-center"><TrendingUp size={16} className="mr-2" /> Amazon</h4>
                                 <ul className="text-sm space-y-2 text-slate-700">
-                                    {trendResult.marketplaceSpecifics.amazon.map((item, i) => (
+                                    {trendResult.marketplaceSpecifics?.amazon.map((item, i) => (
                                         <li key={i}>• {item}</li>
                                     ))}
                                 </ul>
@@ -142,7 +142,7 @@ const MarketRadar: React.FC = () => {
                             <div className="bg-orange-50 p-5 rounded-xl border border-orange-200">
                                 <h4 className="font-bold text-orange-800 mb-3 flex items-center"><TrendingUp size={16} className="mr-2" /> Shopee</h4>
                                 <ul className="text-sm space-y-2 text-slate-700">
-                                    {trendResult.marketplaceSpecifics.shopee.map((item, i) => (
+                                    {trendResult.marketplaceSpecifics?.shopee.map((item, i) => (
                                         <li key={i}>• {item}</li>
                                     ))}
                                 </ul>
