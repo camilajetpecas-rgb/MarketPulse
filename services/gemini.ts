@@ -30,7 +30,7 @@ export const analyzeListing = async (
     4. Análise padrão: Pontos fortes, fracos, keywords SEO, melhoria de descrição e análise de preço.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 systemInstruction: ANALYST_INSTRUCTION,
@@ -114,7 +114,7 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
 
         // Executa busca pela URL
         const urlSearchPromise = ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: searchPrompt,
             config: { tools: [{ googleSearch: {} }] }
         });
@@ -127,7 +127,7 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
             Preciso das medidas (altura, largura, comprimento) e peso do produto/embalagem.`;
 
             keywordSearchPromise = ai.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: "gemini-1.5-flash",
                 contents: keywordPrompt,
                 config: { tools: [{ googleSearch: {} }] }
             });
@@ -170,13 +170,15 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
        - Marque source='estimated'.
     3. **Estimativa de Último Recurso**: Se não houver NENHUMA medida no texto, ESTIME com base no tipo de produto (ex: se for 'Celular', use 15x8x5cm, 0.4kg). NÃO RETORNE NULL. Use seu conhecimento de mundo.
     4. **Localização**: Extraia a cidade e estado do vendedor/estoque. Se não encontrar, deixe vazio. Formato ideal: "Cidade, UF".
+    5. **Anúncios Semelhantes**: Com base na pesquisa, identifique outros anúncios do mesmo produto com preços diferentes.
+    6. **Ações**: Sugira 3 ações imediatas para melhorar este anúncio específico (ex: "Reduzir preço em 5%", "Melhorar título com palavras-chave X").
     
     Schema desejado: JSON estrito.
     
     NOTA: Se a busca foi genérica (pelo nome do produto), preencha 'seller' como 'Vários Vendedores' e 'itemLocation' como 'Brasil'.`;
 
         const jsonResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: formatPrompt,
             config: {
                 responseMimeType: "application/json",
@@ -216,7 +218,22 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
 
                         logistics: { type: Type.STRING },
                         listingAge: { type: Type.STRING },
-                        salesEstimate: { type: Type.STRING }
+                        salesEstimate: { type: Type.STRING },
+                        similarAds: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    title: { type: Type.STRING },
+                                    price: { type: Type.STRING },
+                                    url: { type: Type.STRING }
+                                }
+                            }
+                        },
+                        actionableInsights: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                        }
                     },
                     required: ["title", "description"]
                 }
@@ -273,7 +290,7 @@ export const generateCopywriting = async (data: ExtractedAdData): Promise<Copywr
     `;
 
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-1.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -313,7 +330,7 @@ export const analyzeTrends = async (category: string): Promise<TrendResult> => {
     Importante: Utilize a ferramenta de busca para obter dados recentes.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 tools: [{ googleSearch: {} }],
@@ -329,7 +346,7 @@ export const analyzeTrends = async (category: string): Promise<TrendResult> => {
             .filter((s: any) => s.uri !== "#") || [];
 
         const formattingResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: `Converta a seguinte análise de mercado em JSON estrito.
         Texto da análise: ${text}
         
@@ -404,7 +421,7 @@ export const searchMercadoLivreCatalog = async (category: string): Promise<Catal
         Use o Google Search para encontrar dados reais recentes.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 tools: [{ googleSearch: {} }]
@@ -426,7 +443,7 @@ export const searchMercadoLivreCatalog = async (category: string): Promise<Catal
         }`;
 
         const jsonResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: formatPrompt,
             config: {
                 responseMimeType: "application/json",
@@ -488,7 +505,7 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
         Retorne também uma análise de padrões e sugestões.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 tools: [{ googleSearch: {} }]
@@ -515,7 +532,7 @@ export const generateTitleBenchmarks = async (platform: string, keyword: string)
         }`;
 
         const jsonResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: formatPrompt,
             config: {
                 responseMimeType: "application/json",
@@ -580,7 +597,7 @@ export const generateAdsAudit = async (context: string): Promise<string> => {
         Seja curto, grosso e focado em LUCRO.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
         });
 
@@ -611,7 +628,7 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
         Seja direto.`;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 tools: [{ googleSearch: {} }]
@@ -637,7 +654,7 @@ export const analyzeGeoTrends = async (product: string): Promise<GeoTrendResult>
         } `;
 
         const jsonResponse = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: formatPrompt,
             config: {
                 responseMimeType: "application/json",
@@ -716,7 +733,7 @@ export const generateFullListing = async (productName: string, characteristics: 
         } `;
 
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-1.5-flash",
             contents: prompt,
             config: {
                 responseMimeType: "application/json",

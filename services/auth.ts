@@ -1,9 +1,18 @@
 
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { User } from '../types';
+
+const MOCK_USER: User = {
+  id: 'mock-123',
+  name: 'Desenvolvedor (Modo Offline)',
+  email: 'admin@marketpulse.com',
+  role: 'admin',
+  createdAt: new Date().toISOString()
+};
 
 export const authService = {
   getUsers: async (): Promise<User[]> => {
+    if (!isSupabaseConfigured) return [MOCK_USER];
     const { data, error } = await supabase
       .from('profiles')
       .select('*');
@@ -24,6 +33,10 @@ export const authService = {
   },
 
   login: async (email: string, password: string): Promise<User | null> => {
+    if (!isSupabaseConfigured) {
+      // Allow any login in mock mode
+      return MOCK_USER;
+    }
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -54,27 +67,35 @@ export const authService = {
   },
 
   logout: async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseConfigured) {
+      await supabase.auth.signOut();
+    }
   },
 
   getCurrentUser: async (): Promise<User | null> => {
-    const { data: { user } } = await supabase.auth.getUser();
+    if (!isSupabaseConfigured) return MOCK_USER;
 
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
 
-      return {
-        id: user.id,
-        email: user.email || '',
-        name: profile?.name || user.user_metadata?.name || 'User',
-        role: profile?.role || user.user_metadata?.role || 'user',
-        password: '',
-        createdAt: user.created_at
-      };
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        return {
+          id: user.id,
+          email: user.email || '',
+          name: profile?.name || user.user_metadata?.name || 'User',
+          role: profile?.role || user.user_metadata?.role || 'user',
+          password: '',
+          createdAt: user.created_at
+        };
+      }
+    } catch (e) {
+      return null;
     }
     return null;
   },

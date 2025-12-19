@@ -47,20 +47,22 @@ export interface ExtractedAdData {
   rating?: string;
   reviewsCount?: string;
   itemLocation?: string;
-  
+
   productDimensions?: DimensionSet;
   packageDimensions?: DimensionSet;
 
-  dimensions?: string; 
-  dimensionsDetails?: { 
+  dimensions?: string;
+  dimensionsDetails?: {
     height: string;
     width: string;
     length: string;
   };
   weight?: string;
   logistics?: string;
-  listingAge?: string; 
-  salesEstimate?: string; 
+  listingAge?: string;
+  salesEstimate?: string;
+  similarAds?: { title: string; price: string; url: string }[];
+  actionableInsights?: string[];
 }
 
 export interface CopywritingResult {
@@ -78,22 +80,22 @@ export interface CatalogItem {
 }
 
 export interface TitleBenchmarkResult {
-  competitorTitles: { 
-      title: string; 
-      url: string; 
-      platform: string;
-      sellerName?: string;
-      itemLocation?: string;
-  }[]; 
-  patternAnalysis: string; 
-  suggestedTitles: string[]; 
-  highVolumeKeywords: string[]; 
+  competitorTitles: {
+    title: string;
+    url: string;
+    platform: string;
+    sellerName?: string;
+    itemLocation?: string;
+  }[];
+  patternAnalysis: string;
+  suggestedTitles: string[];
+  highVolumeKeywords: string[];
 }
 
 export interface GeoTrendResult {
-  topRegions: { region: string; interestLevel: number }[]; 
-  relatedQueries: string[]; 
-  seasonalInsight: string; 
+  topRegions: { region: string; interestLevel: number }[];
+  relatedQueries: string[];
+  seasonalInsight: string;
 }
 
 // Interface de Usuário para Autenticação

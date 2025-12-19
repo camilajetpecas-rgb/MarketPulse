@@ -9,7 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials not found. Check your .env file or VITE variables.');
 }
 
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+
 export const supabase = createClient(
-  supabaseUrl || '',
-  supabaseAnonKey || ''
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder'
 );
