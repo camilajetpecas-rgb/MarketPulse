@@ -2,7 +2,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { AdAnalysisResult, TrendResult, ExtractedAdData, Platform, CopywritingResult, CatalogItem, TitleBenchmarkResult, GeoTrendResult } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+console.log("Iniciando Gemini SDK com chave:", apiKey ? (apiKey.startsWith('AIza') ? "Válida (AIza...)" : "SUSPEITA (" + apiKey.substring(0, 10) + "...)") : "AUSENTE");
+const ai = new GoogleGenAI({ apiKey });
 
 // System instruction for the analyst persona
 const ANALYST_INSTRUCTION = `Você é o ALGORITMO DE RANQUEAMENTO dos maiores marketplaces (Mercado Livre, Amazon, Shopee).
@@ -241,6 +243,7 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
         });
 
         if (jsonResponse.text) {
+            console.log("Gemini devolveu JSON de extração com sucesso");
             const parsed = JSON.parse(jsonResponse.text);
 
             let cleanPlatform = Platform.GENERIC;
@@ -269,8 +272,11 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
         }
         throw new Error("Não foi possível processar os dados encontrados.");
 
-    } catch (error) {
-        console.error("Erro na extração de URL:", error);
+    } catch (error: any) {
+        console.error("ERRO DETALHADO NA EXTRAÇÃO:", error);
+        if (error.message?.includes("API key")) {
+            throw new Error("Chave da API Gemini parece inválida ou não foi encontrada no .env");
+        }
         throw error;
     }
 };
