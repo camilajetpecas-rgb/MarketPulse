@@ -91,25 +91,25 @@ export const extractAdDataFromUrl = async (url: string): Promise<ExtractedAdData
             console.log("Erro ao parsear URL para keywords", e);
         }
 
-        const searchPrompt = `Você é um AUDITOR DE LOGÍSTICA DE E-COMMERCE. 
-    Preciso extrair os dados técnicos deste produto.
+        const searchPrompt = `Você é um AUDITOR DE LOGÍSTICA E MERCADO DE E-COMMERCE. 
+    Preciso extrair os dados técnicos e comerciais deste produto.
     
     URL DO PRODUTO: ${url}
     TERMOS DO PRODUTO (EXTRAÍDOS DA URL): ${urlKeywords}
     
-    ALVO PRINCIPAL: DIMENSÕES, PESO E LOCALIZAÇÃO DO ESTOQUE.
+    OBJETIVO DE EXTRAÇÃO (DADOS OBRIGATÓRIOS):
+    1. PRODUTO: Título, Preço Atual, Vendedor, Localização do Estoque (Cidade/UF).
+    2. LOGÍSTICA: Procure na "Ficha Técnica" ou "Características" por:
+       - Medidas do Produto (A x L x P e Peso).
+       - Medidas da EMBALAGEM (A x L x P e Peso do envio). *Isso é crucial para o frete*.
+    3. PERFORMANCE: Identifique:
+       - Quantidade de vendas (ex: "+500 vendidos", "10 mil vendidos").
+       - Data de criação ou idade do anúncio (busque por "publicado há...", "anúncio criado em...").
+       - Avaliação (estrelas e número de reviews).
+    4. CONCORRÊNCIA: Liste outros títulos e preços de anúncios semelhantes que aparecerem na página.
     
-    Execute buscas para encontrar:
-    1. O produto exato "${urlKeywords}" no Mercado Livre/Amazon/Shopee e suas "Características Principais" ou "Ficha Técnica".
-    2. Procure padrões numéricos de medidas no texto: "20x30x10", "20cm", "kg", "gramas".
-    3. Identifique a LOCALIZAÇÃO DO VENDEDOR ou de onde o produto é enviado (Cidade/Estado). Procure por termos como "Enviado de", "Localização", "Vendido por... de...".
-    4. Se não achar no site original, procure produtos idênticos em outros sites para estimar as medidas.
-    
-    Retorne um resumo contendo:
-    - Título, Preço, Vendedor.
-    - LOCALIZAÇÃO DO ESTOQUE (Cidade, UF).
-    - DESCRIÇÃO DETALHADA DAS MEDIDAS ENCONTRADAS (Altura, Largura, Profundidade, Peso).
-    - Se é medida do produto ou da embalagem.
+    Se os dados de 'Medidas da Embalagem' não estiverem explícitos, procure padrões como "Largo da embalagem", "Peso da embalagem" que são comuns no Mercado Livre.
+    Se não encontrar a idade exata, tente inferir pela data das primeiras avaliações.
     `;
 
         // Executa busca pela URL
